@@ -43,6 +43,10 @@ Let's dive into the world of training the MAX7800x, right from the comfort of yo
 
 ### Setup
 - Install anaconda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
+- First also activate it 
+```
+eval "$(/root/anaconda3/bin/conda shell.bash hook)"
+```
 - Create an environment and activate it:
 ```
 conda create -n max78-training-jupyter python=3.8
@@ -55,6 +59,11 @@ git clone --recurse-submodules https://github.com/InES-HPMM/MAX7800x-Jupyter-tra
 ```
 
 - Install the Python requirements
+Had so much problem with the pycocotools so did it like this
+```
+ conda install -c conda-forge pycocotools
+```
+- In requirements i removed the pycocotools
 ```
 pip install -r requirements-cu11.txt
 ```
@@ -78,6 +87,15 @@ Finally, confirm that the following files have been generated in the `max78_jupy
 - **IMPORTANT**: It's crucial to ensure that you have a functional installation of the [ai8x-synthesis](https://github.com/analogdevicesinc/ai8x-training) tool. If you haven't done so yet, please refer to the official GitHub repository and follow the provided instructions for installation.
 
 - **Note**: The following steps are not unique, but are standard for synthesizing any trained network using the ai8x-synthesis tool.
+
+## More instructions
+eval "$(/mnt/HC_Volume_102266423/anaconda3/bin/conda shell.bash hook)"
+conda create -n ai8x-synthesis python=3.11.8 -y
+conda activate ai8x-synthesis
+cd /mnt/HC_Volume_102266423/ai8x-synthesis
+TMPDIR=/mnt/HC_Volume_102266423/tmp pip install --no-cache-dir -r requirements.txt
+python3 quantize.py custom-mnist/qat_class_mnist_checkpoint.pth.tar custom-mnist/qat_class_mnist_checkpoint_q8.pth.tar --device MAX78002 -v
+
 
 #### Prepare the KAT
 - Copy the `sample_mnist_2828.npy` file to the `ai8x-synthesis/tests` directory
@@ -145,7 +163,7 @@ layers:
   # Layer 5: fc2
   - out_offset: 0xA000
     processors: 0xffffffffffffffff
-    output_processors: 0x00000007ffffffff
+    output_processors: 0x00000000000003ff
     operation: mlp
     activate: None
     output_width: 32
@@ -158,3 +176,76 @@ python ai8xize.py --test-dir CNN_example --prefix ai87net-mnist-classifier --che
 ```
 
 Lastly, within the `CNN_example/ai87net-mnist-classifier` directory, you should find the generated CNN files.
+
+
+#### This is additional that didnt was here from the start
+```
+python ai8xize.py \
+  --test-dir CNN_example \
+  --prefix ai87net-mnist-classifier \
+  --checkpoint-file custom-mnist/qat_class_mnist_checkpoint_q8.pth.tar \
+  --config-file custom-mnist/classifier.yaml \
+  --device MAX78002 \
+  --sample-input tests/sample_mnist_2828.npy \
+  --verify-kernels \
+  --timer 0 --display-checkpoint --verbose --softmax --overwrite
+  ```
+
+#### Now when this is ready we should deploy the CNN-model to the MAX78002EVKIT
+- The model is now in the CNN_example folder
+- Start Visual Studio Code and choose CodeFusion Studio 
+- Choose New Workspace
+- Search for MAX78002, continue
+- Choose EVKIT-V1, continue
+- MSDK Single Core PyTorch AI Model using CNN, continue
+- Choose ARM only, continue
+- Choose MSDK, ai8xize is made for this, continue
+- Keep the flags, continue
+- Now the workspace is ready - its time to copy the files you have done in the previous steps 
+- The files that are needed that should be copy is the following into the src folder:
+```
+YourProject/
+├── main.c
+├── cnn.c
+├── cnn.h
+├── weights.h
+├── sample_mnist_2828.h
+├── softmax.c
+└── Include/  (SDK includes - auto-added)
+```
+- Build it with the build icon in the bottom left corner
+- If all went succesful you should have a <project.elf> file created, this should be put on the board
+- To program the MAX78002EVKIT
+- Use the A MAX32625PICO adapter that followed along the board
+- Connect it to “SWD” debug header (JH8)
+- Connect it to the computer
+- Run the Compiler with debug F5 or in the top.
+
+- There were a lot of problems that didnt make me flash my MAX78002EVKIT: 
+Your MAX78002EVKIT is now successfully flashed and running! Here's what was wrong and what I fixed:
+
+The Problem:
+Your .vscode/settings.json was missing critical configuration paths needed for flashing:
+
+cfs.openocd.path - Path to OpenOCD debugger
+cfs.toolchain.armAArch32GCC.path - Path to ARM GCC toolchain
+cfs.tool.path.msdk - Path to MaximSDK
+What I Fixed:
+✅ Added missing paths to settings.json:
+
+OpenOCD: OpenOCD
+ARM GCC: 10.3
+MSDK: MaximSDK
+✅ Updated flash.gdb to use full OpenOCD path
+
+✅ Flashed your firmware (355,696 bytes) via OpenOCD + CMSIS-DAP
+
+✅ Reset and started your device
+
+Next Steps:
+
+- Its also important to use the System Setup in CFS to put in the UART if you want output in the terminal screen
+- After the System setup in CFS you need to generate new code in the last section 
+- After that save it
+- Clean build and flash it again 
+- This is the command to flash the chip: $env:Path = "C:\MaximSDK\Tools\OpenOCD;$env:Path"; C:\MaximSDK\Tools\GNUTools\10.3\bin\arm-none-eabi-gdb.exe --cd="C:\Users\henri\cfs\2.0.1\TestCNN-new\m4" --se="C:\Users\henri\cfs\2.0.1\TestCNN-new\m4\build\m4.elf" --symbols=C:\Users\henri\cfs\2.0.1\TestCNN-new\m4\build\m4.elf -x="C:\Users\henri\cfs\2.0.1\TestCNN-new\m4\.vscode\flash.gdb" --ex="flash_m4_run C:/MaximSDK/Tools/OpenOCD C:/MaximSDK/Tools/OpenOCD/scripts/interface/cmsis-dap.cfg C:/MaximSDK/Tools/OpenOCD/scripts/target/max78002.cfg" --batch

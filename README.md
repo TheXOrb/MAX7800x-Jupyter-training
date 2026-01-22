@@ -45,12 +45,12 @@ Let's dive into the world of training the MAX7800x, right from the comfort of yo
 - Install anaconda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
 - First also activate it 
 ```
-eval "$(/root/anaconda3/bin/conda shell.bash hook)"
+eval "$(/root/anaconda3/bin/conda shell.bash hook)" (This is done in my ECG-server right now)
 ```
 - Create an environment and activate it:
 ```
 conda create -n max78-training-jupyter python=3.8
-conda activate max78-training-jupyter
+conda activate max78-training-jupyter (This needs to be done when running again)
 ```
 
 - Clone the repo and checkout the submodules
@@ -69,6 +69,28 @@ pip install -r requirements-cu11.txt
 ```
 
 - Everything should be ready to go! Open the notebook: `train_MNIST.ipynb`
+
+### Open the notebook and making a session with a ssh-tunnel so it will be run like local
+- Start the Jupyter notebook in the server (For me now its the ECG-server)
+```
+jupyter notebook --allow-root
+```
+- I had to install the followng packages first
+```
+ 497  conda install -c conda-forge ipywidgets
+  498  conda install -n base -c conda-forge widgetsnbextension
+  499  conda install -c conda-forge widgetsnbextension
+```
+- Then I could run
+```
+jupyter notebook --no-browser --port=8888 --allow-root
+```
+- In the terminal here on the local machine run the following: 
+```
+ssh -L 8888:localhost:8888 root@your-server-ip
+```
+- In this local computer go to your browser localhost:8888 and enter the token you get in the server when you started jyputer notebook
+- You will be logged in as a shell user - but now the localhost:8888 will work and you will end up in a jyputer notebook
 
 ### Training the Network
 To train the network, follow these steps within the `train_MNIST.ipynb` notebook:
@@ -249,3 +271,80 @@ Next Steps:
 - After that save it
 - Clean build and flash it again 
 - This is the command to flash the chip: $env:Path = "C:\MaximSDK\Tools\OpenOCD;$env:Path"; C:\MaximSDK\Tools\GNUTools\10.3\bin\arm-none-eabi-gdb.exe --cd="C:\Users\henri\cfs\2.0.1\TestCNN-new\m4" --se="C:\Users\henri\cfs\2.0.1\TestCNN-new\m4\build\m4.elf" --symbols=C:\Users\henri\cfs\2.0.1\TestCNN-new\m4\build\m4.elf -x="C:\Users\henri\cfs\2.0.1\TestCNN-new\m4\.vscode\flash.gdb" --ex="flash_m4_run C:/MaximSDK/Tools/OpenOCD C:/MaximSDK/Tools/OpenOCD/scripts/interface/cmsis-dap.cfg C:/MaximSDK/Tools/OpenOCD/scripts/target/max78002.cfg" --batch
+
+
+## Here I will document how I get it running on https://vast.ai 
+1. Create an template - choosed this template: 
+```
+pytorch_2.3.1-cuda-12.1.1-ipv2/jupyter
+```
+2. Start the console with the blue button Open 
+3. Then you see the applications and can choose Jupyter and Jupyter Terminal
+4. In Jupyter terminal I run: 
+```
+python --version
+The output was:Python 3.10.12
+``` 
+5. Download and install Anaconda/Conda
+```
+wget https://repo.anaconda.com/archive/Anaconda3-2025.12-1-Linux-x86_64.sh
+```
+6. Install conda and use all as standard settings
+```
+bash Anaconda3-2025.12-1-Linux-x86_64.sh
+```
+7. Run the conda
+```
+eval "$(/root/anaconda3/bin/conda shell.bash hook)"
+```
+8. Install python 3.8 
+```
+conda create -n max78-training-jupyter python=3.8
+```
+9. Start the environment
+```
+conda activate max78-training-jupyter (This needs to be done when running again)
+```
+10. Clone the repo
+```
+git clone --recurse-submodules https://github.com/InES-HPMM/MAX7800x-Jupyter-training
+```
+11. Go into the repo you downloaded
+```
+cd MAX78...
+```
+12. Install this packages first
+```
+ conda install -c conda-forge pycocotools
+```
+13. Remove the pycocotools from the requirements
+14. Install the requirements
+```
+pip install -r requirements-cu11.txt
+```
+15. Now when running in Conda environment to run the Jupyter Notebook you need to run this instance - needs some testing from here
+```
+conda install ipykernel
+```
+16. To install the environment into jupyter notebook
+```
+python -m ipykernel install --user --name=max78-training-jupyter
+```
+17. In Jupyter change kernel to max78-training...
+18. When running seaborn is missing - install it 
+```
+pip install seaborn
+```
+19. Import ecg-dataset.py
+20. Import wfdb
+```
+pip install wfdb
+pip install imblearn
+conda install -c conda-forge ipywidgets
+$ conda install -c tqdm
+```
+download the dataset
+wget -r -N -c -np https://physionet.org/files/mitdb/1.0.0/
+
+
+http://189.132.0.144:21308/

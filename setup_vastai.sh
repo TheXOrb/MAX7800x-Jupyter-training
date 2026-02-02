@@ -98,6 +98,31 @@ fi
 rm mitdb-1.0.0.zip
 echo "MIT-BIH dataset downloaded and extracted successfully!"
 
+# Optional: Download PTB-XL dataset (using fast Kaggle mirror)
+echo "[Optional] Downloading PTB-XL dataset from Kaggle (fast)..."
+cd ~/MAX7800x-Jupyter-training
+wget -O ptb-xl-dataset.zip https://www.kaggle.com/api/v1/datasets/download/khyeh0719/ptb-xl-dataset
+if [ ! -f "ptb-xl-dataset.zip" ]; then
+    echo "Download failed: ptb-xl-dataset.zip not found."
+    exit 1
+fi
+echo "Extracting PTB-XL dataset..."
+mkdir -p physionet.org/files/
+unzip -q ptb-xl-dataset.zip -d physionet.org/files/
+
+# Normalize directory structure - Kaggle extracts to long name, we need ptb-xl/1.0.1
+if [ -d "physionet.org/files/ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.1" ]; then
+    echo "Reorganizing directory structure to match expected paths..."
+    mkdir -p physionet.org/files/ptb-xl
+    mv physionet.org/files/ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.1 physionet.org/files/ptb-xl/1.0.1
+    echo "✓ Directory structure normalized: physionet.org/files/ptb-xl/1.0.1/"
+fi
+
+rm ptb-xl-dataset.zip
+echo "PTB-XL dataset downloaded and extracted successfully!"
+echo "Location: ~/MAX7800x-Jupyter-training/physionet.org/files/ptb-xl/1.0.1/"    
+
+
 echo "============================================"
 echo "Setup completed successfully!"
 echo "============================================"

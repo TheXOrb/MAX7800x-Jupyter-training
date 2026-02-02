@@ -7,7 +7,7 @@
 
 **IMPORTANT:** Your model was trained with QAT (Quantization-Aware Training) enabled in Cell 10.5 of ECG_MIT_BIH.ipynb. This automatically folds BatchNorm layers during training, making the checkpoint ready for synthesis.  
 
-## Step 1: Setup ai8x-synthesis Environment
+## Step 1: Setup ai8x-synthesis Environment (on Vast.ai?)
 
 ```bash
 # Initialize conda
@@ -36,7 +36,7 @@ cp /root/MAX7800x-Jupyter-training/best_ecg_model_ai8x.pth.tar /root/ai8x-synthe
 # Copy KAT sample
 cp /root/MAX7800x-Jupyter-training/sample_ecg_1x128.npy /root/ai8x-synthesis
 
-# Copy network YAML file
+# Copy network YAML file (this files needs to be uploaded if its not there)
 cp /root/MAX7800x-Jupyter-training/ecg-net.yaml /root/ai8x-synthesis/networks/
 
 

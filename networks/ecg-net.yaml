@@ -1,0 +1,112 @@
+# ECG Classifier Network for MAX78002
+# ai8x-compatible 1D CNN for ECG classification (5 classes)
+# Input: (1, 128) - single channel ECG signal, 128 samples
+
+arch: ecg-net
+dataset: ecg_mitbih
+
+# Define the network layers
+layers:
+  # Block 1: Conv1 - 64 filters (5x5, pad=2)
+  - out_offset: 0x2000
+    processors: 0x0000000000000001
+    operation: conv1d
+    kernel_size: 5
+    pad: 2
+    activate: ReLU
+    data_format: HWC
+    output_processors: 0xffffffffffffffff
+    out_channels: 64
+  
+  # Block 1: Conv2 - 64 filters (5x5, pad=2, maxpool 2x1)
+  - out_offset: 0x0000
+    processors: 0xffffffffffffffff
+    operation: conv1d
+    kernel_size: 5
+    pad: 2
+    activate: ReLU
+    max_pool: 2
+    pool_stride: 2
+    data_format: HWC
+    output_processors: 0xffffffffffffffff
+    out_channels: 64
+  
+  # Block 2: Conv3 - 128 filters (5x5, pad=2)
+  - out_offset: 0x2000
+    processors: 0xffffffffffffffff
+    operation: conv1d
+    kernel_size: 5
+    pad: 2
+    activate: ReLU
+    data_format: HWC
+    output_processors: 0xffffffffffffffff
+    out_channels: 128
+  
+  # Block 2: Conv4 - 128 filters (5x5, pad=0, maxpool 2x1)
+  - out_offset: 0x0000
+    processors: 0xffffffffffffffff
+    operation: conv1d
+    kernel_size: 5
+    pad: 0
+    activate: ReLU
+    max_pool: 2
+    pool_stride: 2
+    data_format: HWC
+    output_processors: 0xffffffffffffffff
+    out_channels: 128
+  
+  # Block 3: Conv5 - 256 filters (3x3, pad=0)
+  - out_offset: 0x2000
+    processors: 0xffffffffffffffff
+    operation: conv1d
+    kernel_size: 3
+    pad: 0
+    activate: ReLU
+    data_format: HWC
+    output_processors: 0xffffffffffffffff
+    out_channels: 256
+  
+  # Block 3: Conv6 - 256 filters (3x3, pad=0, maxpool 2x1)
+  - out_offset: 0x0000
+    processors: 0xffffffffffffffff
+    operation: conv1d
+    kernel_size: 3
+    pad: 0
+    activate: ReLU
+    max_pool: 2
+    pool_stride: 2
+    data_format: HWC
+    output_processors: 0xffffffffffffffff
+    out_channels: 256
+  
+  # Block 4: Conv7 - 512 filters (3x3, pad=0, maxpool 2x1)
+  - out_offset: 0x2000
+    processors: 0xffffffffffffffff
+    operation: conv1d
+    kernel_size: 3
+    pad: 0
+    activate: ReLU
+    max_pool: 2
+    pool_stride: 2
+    data_format: HWC
+    output_processors: 0xffffffffffffffff
+    out_channels: 512
+  
+  # Block 5: Conv8 - 256 filters (3x3, pad=0)
+  - out_offset: 0x0000
+    processors: 0xffffffffffffffff
+    operation: conv1d
+    kernel_size: 3
+    pad: 0
+    activate: ReLU
+    data_format: HWC
+    output_processors: 0xffffffffffffffff
+    out_channels: 256
+  
+  # Fully connected layer: 256 -> 5 classes
+  - out_offset: 0x2000
+    processors: 0xffffffffffffffff
+    operation: mlp
+    flatten: true
+    output_width: 32
+    out_channels: 5

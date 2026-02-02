@@ -111,12 +111,13 @@ Finally, confirm that the following files have been generated in the `max78_jupy
 - **Note**: The following steps are not unique, but are standard for synthesizing any trained network using the ai8x-synthesis tool.
 
 ## More instructions
-eval "$(/mnt/HC_Volume_102266423/anaconda3/bin/conda shell.bash hook)"
-conda create -n ai8x-synthesis python=3.11.8 -y
+eval "$(/mnt/HC_Volume_102266423/anaconda3/bin/conda shell.bash hook)"  
+conda create -n ai8x-synthesis python=3.11.8 -y  
 conda activate ai8x-synthesis
-cd /mnt/HC_Volume_102266423/ai8x-synthesis
-TMPDIR=/mnt/HC_Volume_102266423/tmp pip install --no-cache-dir -r requirements.txt
-python3 quantize.py custom-mnist/qat_class_mnist_checkpoint.pth.tar custom-mnist/qat_class_mnist_checkpoint_q8.pth.tar --device MAX78002 -v
+git clone --recursive https://github.com/analogdevicesinc/ai8x-synthesis.git
+cd /mnt/HC_Volume_102266423/ai8x-synthesis  
+TMPDIR=/mnt/HC_Volume_102266423/tmp pip install --no-cache-dir -r requirements.txt  
+python3 quantize.py custom-mnist/qat_class_mnist_checkpoint.pth.tar custom-mnist/qat_class_mnist_checkpoint_q8.pth.tar --device MAX78002 -v  
 
 
 #### Prepare the KAT
@@ -271,6 +272,11 @@ Next Steps:
 - After that save it
 - Clean build and flash it again 
 - This is the command to flash the chip: $env:Path = "C:\MaximSDK\Tools\OpenOCD;$env:Path"; C:\MaximSDK\Tools\GNUTools\10.3\bin\arm-none-eabi-gdb.exe --cd="C:\Users\henri\cfs\2.0.1\TestCNN-new\m4" --se="C:\Users\henri\cfs\2.0.1\TestCNN-new\m4\build\m4.elf" --symbols=C:\Users\henri\cfs\2.0.1\TestCNN-new\m4\build\m4.elf -x="C:\Users\henri\cfs\2.0.1\TestCNN-new\m4\.vscode\flash.gdb" --ex="flash_m4_run C:/MaximSDK/Tools/OpenOCD C:/MaximSDK/Tools/OpenOCD/scripts/interface/cmsis-dap.cfg C:/MaximSDK/Tools/OpenOCD/scripts/target/max78002.cfg" --batch
+
+## ECG on the chip
+- The sample output was a little bit mismatched, needed corrections in the main.c - this was done by google geminin
+- Tested to do the output for the sample after the batchfusing - didnt correct it 
+- Needs to fix the ECG_MIT_BIH to get the sample right - everything else works. 
 
 
 ## Here I will document how I get it running on https://vast.ai 

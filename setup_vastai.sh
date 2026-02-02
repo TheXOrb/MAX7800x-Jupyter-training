@@ -23,9 +23,13 @@ echo "[Step 3/11] Initializing conda..."
 eval "$(~/anaconda3/bin/conda shell.bash hook)"
 ~/anaconda3/bin/conda init bash
 
-# 4. Create conda environment with Python 3.8
+# 4. Create conda max78-training-jupyter environment with Python 3.8
 echo "[Step 4/11] Creating conda environment with Python 3.8..."
 ~/anaconda3/bin/conda create -n max78-training-jupyter python=3.8 -y
+
+# 4. Create conda max78-syntesis-jupyter environment with Python 3.11.8
+echo "[Step 4/11] Creating conda environment with Python 3.8..."
+~/anaconda3/bin/conda create -n max78-syntesis-jupyter python=3.11.8 -y
 
 # 5. Activate the conda environment (use source to make it work in scripts)
 echo "[Step 5/11] Activating conda environment..."
@@ -79,7 +83,20 @@ conda install -c conda-forge ipywidgets -y
 # Optional: Download MIT-BIH dataset (commented out as it's large)
 echo "[Optional] Downloading MIT-BIH dataset..."
 cd ~/MAX7800x-Jupyter-training
-wget -r -N -c -np https://physionet.org/files/mitdb/1.0.0/
+wget -O mitdb-1.0.0.zip https://physionet.org/content/mitdb/get-zip/1.0.0/
+if [ ! -f "mitdb-1.0.0.zip" ]; then
+    echo "Download failed: mitdb-1.0.0.zip not found."
+    exit 1
+fi
+echo "Extracting MIT-BIH dataset..."
+mkdir -p physionet.org/files/
+unzip -q mitdb-1.0.0.zip -d physionet.org/files/
+if [ -d "physionet.org/files/mit-bih-arrhythmia-database-1.0.0" ] && [ ! -d "physionet.org/files/mitdb/1.0.0" ]; then
+    mkdir -p physionet.org/files/mitdb
+    mv physionet.org/files/mit-bih-arrhythmia-database-1.0.0 physionet.org/files/mitdb/1.0.0
+fi
+rm mitdb-1.0.0.zip
+echo "MIT-BIH dataset downloaded and extracted successfully!"
 
 echo "============================================"
 echo "Setup completed successfully!"
